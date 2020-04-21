@@ -1,2 +1,4 @@
 *.class
 *.log
+.gitsecret/keys/random_seed
+info.txt
