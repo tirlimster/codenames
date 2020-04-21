@@ -2,3 +2,4 @@
 *.log
 .gitsecret/keys/random_seed
 info.txt
+codes.txt
