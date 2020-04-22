@@ -1,6 +1,7 @@
 from json import loads, dumps
 from random import shuffle, seed
 
+
 def removeRepetitions():
 	with open("words.json", 'r', encoding="utf-8") as f:
 		ws = loads(f.read().strip())

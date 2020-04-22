@@ -32,13 +32,15 @@ class Database:
     def get_player(self, player_id):
         with self.connection:
             self.cursor.execute(f"""SELECT * FROM players WHERE player_id = '{player_id}'""")
-            return self.cursor.fetchall()
+            return self.cursor.fetchone()
 
     def insert_player(self, player_id):
         if self.get_player(player_id):
-            return
+            print("!!! inserting player twice")
+            raise RuntimeError
         with self.connection:
             self.cursor.execute(f"""INSERT INTO players (player_id) VALUES ('{player_id}')""")
+        return self.get_player(player_id)
 
     def edit_players_game(self, player_id, admin_id):
         current_admin = f"NULL" if admin_id is None else f"'{admin_id}'"
@@ -52,7 +54,7 @@ class Database:
             game = Game(key=game_key)
             field_string = json.dumps(game.field)
             mask_string = json.dumps(game.mask)
-            words_string = json.dumps(game.mask)
+            words_string = json.dumps(game.words)
 
             self.cursor.execute(f"""
                 INSERT INTO games (admin_id, field, mask, words, game_key) 
