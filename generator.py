@@ -1,6 +1,7 @@
 from random import randint, shuffle, seed
 from json import loads
 
+
 class Game:
 	def __init__(self, key, mask=None, words=None):
 		seed(key)
@@ -13,12 +14,12 @@ class Game:
 			self.field[gen[i] // 5][gen[i] % 5] = 1
 		self.field[gen[17] // 5][gen[17] % 5] = 3
 		self.mask = [[0] * 5 for x in range(5)]
+		self.words = [[0] * 5 for x in range(5)]
 
-	def initFromDB(self, ar):
-		ar = loads(ar)
-		self.field = ar[1]
-		self.mask = ar[2]
-		self.words = ar[3]
+	def initFromDB(self, field, mask, words):
+		self.field = field
+		self.mask = mask
+		self.words = words
 
 	def open(self, x, y):
 		self.mask[y][x] = 1
