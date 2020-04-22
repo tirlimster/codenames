@@ -49,7 +49,7 @@ class Database:
 
     def start_game(self, admin_id, game_key):
         with self.connection:
-            game = Game(game_key)
+            game = Game(key=game_key)
             field_string = json.dumps(game.field)
             mask_string = json.dumps(game.mask)
             words_string = json.dumps(game.mask)
@@ -69,7 +69,7 @@ class Database:
         field = json.loads(fetched[1])
         mask = json.loads(fetched[2])
         words = json.loads(fetched[3])
-        return Game(field, mask, words)
+        return Game(field=field, mask=mask, words=words)
 
     def get_game_by_admin(self, admin_id):
         with self.connection:
