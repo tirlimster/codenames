@@ -16,9 +16,17 @@ class Game:
 				self.field[gen[i] // 5][gen[i] % 5] = 0
 			for i in range(9, 9 + 8):
 				self.field[gen[i] // 5][gen[i] % 5] = 1
-			self.field[gen[17] // 5][gen[17] % 5] = 3
+			self.field[gen[9 + 8] // 5][gen[9 + 8] % 5] = 3
 
-	def open(self, x, y):
+	def open(self, word):
+		x, y = -1, -1
+		for x0 in range(5):
+			for y0 in range(5):
+				if self.words[y0][x0] == word:
+					x, y = x0, y0
+		if (x, y) == (-1, -1):
+			print("No such word found")
+			raise KeyError
 		self.mask[y][x] = 1
 
 	def showUser(self):
