@@ -1,7 +1,15 @@
 from random import randint, shuffle, seed
 
 class Game:
-	def __init__(self, key):
+	def init(self, field, mask, words):
+		self.field = field
+		self.mask = mask
+		self.words = words
+
+	def __init__(self, key, mask=None, words=None):
+		if (words != None):
+			self.init(key, mask, words)
+			return
 		seed(key)
 		self.field = [[2] * 5 for x in range(5)]
 		gen = [x for x in range(25)]
