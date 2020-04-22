@@ -14,7 +14,7 @@ class Game:
 		self.mask = [[0] * 5 for x in range(5)]
 
 	def open(self, x, y):
-		mask[y][x] = 1
+		self.mask[y][x] = 1
 		return self.field[y][x]
 
 	def showUser(self):
