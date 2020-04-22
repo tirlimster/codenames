@@ -1,12 +1,11 @@
-from random import randint, shuffle, seed
-from json import loads
+from random import shuffle, seed
 
 
 class Game:
 	def __init__(self, field=None, mask=None, words=None, key=None):
-		self.field = [[2] * 5 for x in range(5)] if field is None else field
-		self.mask = [[0] * 5 for x in range(5)] if mask is None else mask
-		self.words = [["лол"] * 5 for x in range(5)] if words is None else words
+		self.field = [[2] * 5 for _ in range(5)] if field is None else field
+		self.mask = [[0] * 5 for _ in range(5)] if mask is None else mask
+		self.words = [["лол"] * 5 for _ in range(5)] if words is None else words
 
 		if key is not None:
 			seed(key)
