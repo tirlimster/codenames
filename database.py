@@ -96,23 +96,3 @@ class Database:
 if __name__ == '__main__':
     database = Database()
     database.restart()
-
-    database.insert_player('vk1231231')
-    database.insert_player('vk1221123')
-    database.insert_player('tg3331233')
-    database.insert_player('tg3331377')
-
-    database.insert_player('vk1221123')
-    database.insert_player('tg3331377')
-
-    database.start_game('vk1221123', "Lolovich")
-    database.start_game('tg3331377', "Kekovich")
-
-    with database.connection:
-        database.cursor.execute("""SELECT * FROM games""")
-        print(database.cursor.fetchall())
-
-        database.cursor.execute("""SELECT * FROM players""")
-        print(database.cursor.fetchall())
-
-    game = database.get_game_by_key("Lolovich")
