@@ -85,7 +85,7 @@ class MainLoop:
                 Request(mess, self.db, bots=self.bots)
             except Exception as ex:
                 print(f"!!! ERROR WHILE PARSING MESSAGE: {ex}")
-                # TODO error message to user
+                self.bots[mess["platform"]].write_message(mess["id"], "Произошла ошибка, дико извиняюсь")
 
 
 if __name__ == '__main__':
