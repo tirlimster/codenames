@@ -16,9 +16,9 @@ class Database:
             self.cursor.execute("""DROP TABLE IF EXISTS games""")
 
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS players(
-                player_id TEXT UNIQUE, 
-                player_name TEXT UNIQUE, 
-                current_admin TEXT
+                player_id TEXT UNIQUE NOT NULL, 
+                current_admin TEXT, 
+                status TEXT NOT NULL
             )""")
 
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS games(
@@ -39,14 +39,15 @@ class Database:
             print("!!! inserting player twice")
             raise RuntimeError
         with self.connection:
-            self.cursor.execute(f"""INSERT INTO players (player_id) VALUES ('{player_id}')""")
+            self.cursor.execute(f"""INSERT INTO players (player_id, status) VALUES ('{player_id}', 'new_player')""")
         return self.get_player(player_id)
 
-    def edit_players_game(self, player_id, admin_id):
+    def edit_player(self, player_id, admin_id, status):
         current_admin = f"NULL" if admin_id is None else f"'{admin_id}'"
         with self.connection:
             self.cursor.execute(f"""
-                UPDATE players SET current_admin = {current_admin} WHERE player_id = '{player_id}'
+                UPDATE players SET current_admin = {current_admin}, status = '{status}'
+                WHERE player_id = '{player_id}'
             """)
 
     def start_game(self, admin_id, game_key):
@@ -60,7 +61,6 @@ class Database:
                 INSERT INTO games (admin_id, field, mask, words, game_key) 
                 VALUES ('{admin_id}', '{field_string}', '{mask_string}', '{words_string}', '{game_key}')
             """)
-        self.edit_players_game(admin_id, admin_id)
 
     def delete_game(self, admin_id):
         with self.connection:
