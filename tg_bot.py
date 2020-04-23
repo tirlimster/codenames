@@ -12,7 +12,7 @@ class TgBot:
     def __init__(self, events):
         self.events.append(events)
 
-    def mainloop(self):
+    def main_loop(self):
         self.bot.polling()
 
     def show(self):
@@ -26,7 +26,7 @@ class TgBot:
             "last": mes.from_user.last_name,
             "id": mes.from_user.id,
             "platform": "tg"
-            })
+        })
 
 
 if __name__ == "__main__":

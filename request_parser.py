@@ -2,6 +2,7 @@ import time
 import threading
 from database import Database
 from vk_bot import VkBot
+from tg_bot import TgBot
 
 
 class Request:
@@ -24,9 +25,15 @@ class Request:
         def save(self):
             self.db.edit_player(self.player_id, self.current_admin, self.status)
 
+        def start_game(self, game_key):
+            self.db.start_game(self.player_id, game_key)
+
     def __init__(self, mess, db, bots):
         player_id = mess["platform"] + mess["id"]
+        self.db = db
+        self.bots = bots
         self.mess = mess
+        self.lwr = mess["text"].lower()
         self.player = self.Player(player_id, db, bots)
         status_to_function = {
             "new_player": self.new_player,
@@ -40,30 +47,73 @@ class Request:
         func()
         self.player.save()
 
+    def find_by_key(self, game_key):
+        return self.db.get_game_by_key(game_key)
+
+    def find_by_admin(self, game_key):
+        return self.db.get_game_by_admin(game_key)
+
     def new_player(self):
         self.player.status = "main_menu"
         self.player.send_message("Привет, друг!! С помощью этого бота ты сможешь поиграть с друзьями в коднэймс:))")
 
     def main_menu(self):
-        if self.mess["text"].lower() == "создать игру":
+        if self.lwr == "создать игру":
             self.player.status = "creating_game"
             self.player.send_message("Инициализация комнаты...\nЗадай ключ своей комнате")
-        elif self.mess["text"].lower() == "войти в игру":
+        elif self.lwr == "войти в игру":
             self.player.status = "joining_game"
             self.player.send_message("Напиши ключ комнаты, к которой хочешь присоединиться")
-        elif self.mess["text"].lower() == "правила":
+        elif self.lwr == "правила":
             self.player.send_message("тут будут правила codenames")
         else:
             self.player.send_message("Не понял")
 
     def creating_game(self):
-        pass
+        if self.lwr == "назад в меню":
+            self.player.status = "main_menu"
+            self.player.send_message("Ты в главном меню")
+        elif len(self.lwr) < 12:
+            self.player.send_message("Вводи ключ меньше 10 симовов")
+        elif self.find_by_key(self.lwr) is not None:
+            self.player.send_message(f"Игра с таким ключом уже есть")
+        else:
+            self.player.start_game(self.lwr)
+            self.player.status = "game_admin"
+            self.player.send_message(f"Игра с ключом {self.lwr}")
 
     def game_admin(self):
-        pass
+        data = self.db.get_players_by_admin(self.player.id)
+        players = [self.Player(p, self.db, self.bots) for p in data]
+        game = self.db.get_game_by_admin(self.player.current_admin)
+        if self.lwr == "удалить комнату":
+            for p in players:
+                p.status = "main_menu"
+                p.current_admin = None
+                p.send_message("Комната удалена. Ты в главном меню")
+                p.save()
+            self.db.delete_game(self.player.id)
+        elif self.lwr == "кто (who)":
+            ids = '\n'.join([p.id for p in players])
+            self.player.send_message(f"Вот они слева направо:\n{ids}")
+        # elif self.lwr == "поделить на команды":
+        elif game.find(self.lwr):
+            self.player.send_message("Такого слова нет" if game.find(self.lwr) == 1 else "Слово уже открыто")
+        else:
+            color = game.open(self.lwr)
+            self.player.send_message(f"Слово {self.lwr} открыто! Оно цвета {color}")
 
     def joining_game(self):
-        pass
+        if self.lwr == "назад в меню":
+            self.player.status = "main_menu"
+            self.player.send_message("Ты в главном меню")
+        elif len(self.lwr) < 12:
+            self.player.send_message("Вводи ключ меньше 10 симовов")
+        elif self.find_by_key(self.lwr) is None:
+            self.player.send_message(f"Игры с таким ключом нет")
+        else:
+            self.player.current_admin = self.db.get_game_by_key(self.lwr)
+            self.player.send_message(f"Игра с ключом {self.lwr}")
 
     def game_player(self):
         pass
@@ -96,6 +146,7 @@ class MainLoop:
 
         self.bots = {
             "vk": VkBot(self.events),
+            "tg": TgBot(self.events),
             "cn": ConsoleBot(self.events)
         }
         # starting bots

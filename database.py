@@ -68,6 +68,8 @@ class Database:
 
     @staticmethod
     def convert_game(fetched):
+        if fetched is None:
+            return None
         field = json.loads(fetched[1])
         mask = json.loads(fetched[2])
         words = json.loads(fetched[3])
@@ -82,6 +84,11 @@ class Database:
         with self.connection:
             self.cursor.execute(f"""SELECT * FROM games WHERE game_key = '{game_key}'""")
             return self.convert_game(self.cursor.fetchone())
+
+    def get_players_by_admin(self, admin_id):
+        with self.connection:
+            self.cursor.execute(f"""SELECT * FROM players WHERE current_admin = '{admin_id}'""")
+            return self.cursor.fetchall()
 
     def edit_game(self, admin_id, game):
         with self.connection:

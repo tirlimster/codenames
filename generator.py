@@ -22,6 +22,18 @@ class Game:
 				self.field[gen[i] // 5][gen[i] % 5] = 1
 			self.field[gen[9 + 8] // 5][gen[9 + 8] % 5] = 3
 
+	def find(self, word):
+		x, y = -1, -1
+		for x0 in range(5):
+			for y0 in range(5):
+				if self.words[y0][x0] == word:
+					x, y = x0, y0
+		if (x, y) == (-1, -1):
+			return 1
+		if self.mask[y][x]:
+			return 2
+		return 0
+
 	def open(self, word):
 		x, y = -1, -1
 		for x0 in range(5):
@@ -32,6 +44,7 @@ class Game:
 			print("No such word found")
 			raise KeyError
 		self.mask[y][x] = 1
+		return self.field[y][x]
 
 	def showUser(self):
 		return [[self.field[y][x] if self.mask[y][x] else 4 for x in range(5)] for y in range(5)]
