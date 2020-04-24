@@ -1,6 +1,5 @@
 import json
 import sqlite3
-from generator import Game
 
 
 class Database:
@@ -17,16 +16,18 @@ class Database:
 
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS players(
                 player_id TEXT UNIQUE NOT NULL, 
-                current_admin TEXT, 
+                name TEXT,
+                current_game TEXT, 
                 status TEXT NOT NULL
             )""")
 
             self.cursor.execute("""CREATE TABLE IF NOT EXISTS games(
                 admin_id TEXT UNIQUE REFERENCES players(player_id),
+                players TEXT,
+                game_key TEXT UNIQUE, 
                 field TEXT, 
                 mask TEXT, 
-                words TEXT,
-                game_key TEXT UNIQUE
+                words TEXT
             )""")
 
     def get_player(self, player_id):
@@ -34,72 +35,58 @@ class Database:
             self.cursor.execute(f"""SELECT * FROM players WHERE player_id = '{player_id}'""")
             return self.cursor.fetchone()
 
-    def insert_player(self, player_id):
+    def insert_player(self, player_id, name):
         if self.get_player(player_id):
             print("!!! inserting player twice")
             raise RuntimeError
         with self.connection:
-            self.cursor.execute(f"""INSERT INTO players (player_id, status) VALUES ('{player_id}', 'new_player')""")
+            self.cursor.execute(f"""INSERT INTO players (player_id, status, name) 
+                                    VALUES ('{player_id}', 'new_player', '{name}')""")
         return self.get_player(player_id)
 
-    def edit_player(self, player_id, admin_id, status):
-        current_admin = f"NULL" if admin_id is None else f"'{admin_id}'"
+    def edit_player(self, player_id, game_id, status):
+        current_game = f"NULL" if game_id is None else f"'{game_id}'"
         with self.connection:
             self.cursor.execute(f"""
-                UPDATE players SET current_admin = {current_admin}, status = '{status}'
+                UPDATE players SET current_game = {current_game}, status = '{status}'
                 WHERE player_id = '{player_id}'
             """)
 
-    def start_game(self, admin_id, game_key):
+    def get_game(self, admin_id=None, game_key=None):
+        id_cond = "TRUE" if admin_id is None else f"admin_id = '{admin_id}'"
+        key_cond = "TRUE" if game_key is None else f"game_key = '{game_key}'"
         with self.connection:
-            game = Game(key=game_key)
-            field_string = json.dumps(game.field)
-            mask_string = json.dumps(game.mask)
-            words_string = json.dumps(game.words)
+            self.cursor.execute(f"""SELECT * FROM games WHERE {id_cond} AND {key_cond}""")
+            game = self.cursor.fetchone()
+            if game is None:
+                return None
+            return game[0], json.loads(game[1]), game[2], json.loads(game[3]), json.loads(game[4]), json.loads(game[5])
 
+    def create_game(self, admin_id, game_key):
+        with self.connection:
+            players = json.dumps([[admin_id, 0]])
+            new_field = json.dumps([[0] * 5 for _ in range(5)])
+            new_mask = json.dumps([[0] * 5 for _ in range(5)])
+            new_words = json.dumps([["a"] * 5 for _ in range(5)])
             self.cursor.execute(f"""
-                INSERT INTO games (admin_id, field, mask, words, game_key) 
-                VALUES ('{admin_id}', '{field_string}', '{mask_string}', '{words_string}', '{game_key}')
+                INSERT INTO games (admin_id, game_key, players, field, mask, words) 
+                VALUES ('{admin_id}', '{game_key}', '{players}', '{new_field}', '{new_mask}', '{new_words}')
             """)
+        return self.get_game(admin_id, game_key)
+
+    def save_game(self, game):
+        field, mask, words, players = map(
+            json.dumps, [game.board.field, game.board.mask, game.board.words, game.players]
+        )
+        with self.connection:
+            self.cursor.execute(f"""
+                UPDATE games SET field = '{field}', mask = '{mask}', words = '{words}', players = '{players}',
+                admin_id = '{game.admin}' WHERE game_key = '{game.key}'
+           """)
 
     def delete_game(self, admin_id):
         with self.connection:
             self.cursor.execute(f"""DELETE FROM games WHERE admin_id = '{admin_id}'""")
-
-    @staticmethod
-    def convert_game(fetched):
-        if fetched is None:
-            return None
-        field = json.loads(fetched[1])
-        mask = json.loads(fetched[2])
-        words = json.loads(fetched[3])
-        return Game(field=field, mask=mask, words=words)
-
-    def get_game_by_admin(self, admin_id):
-        with self.connection:
-            self.cursor.execute(f"""SELECT * FROM games WHERE admin_id = '{admin_id}'""")
-            return self.convert_game(self.cursor.fetchone())
-
-    def get_game_by_key(self, game_key):
-        with self.connection:
-            self.cursor.execute(f"""SELECT * FROM games WHERE game_key = '{game_key}'""")
-            return self.convert_game(self.cursor.fetchone())
-
-    def get_players_by_admin(self, admin_id):
-        with self.connection:
-            self.cursor.execute(f"""SELECT * FROM players WHERE current_admin = '{admin_id}'""")
-            return self.cursor.fetchall()
-
-    def edit_game(self, admin_id, game):
-        with self.connection:
-            field_string = json.dumps(game.field)
-            mask_string = json.dumps(game.mask)
-            words_string = json.dumps(game.mask)
-
-            self.cursor.execute(f"""
-                UPDATE games SET field = '{field_string}', mask = '{mask_string}', words = '{words_string}' 
-                WHERE admin_id = '{admin_id}'
-            """)
 
 
 if __name__ == '__main__':

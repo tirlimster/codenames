@@ -24,7 +24,7 @@ class TgBot:
             "text": mes.text,
             "first": mes.from_user.first_name,
             "last": mes.from_user.last_name,
-            "id": mes.from_user.id,
+            "id": mes.from_user.platform_id,
             "platform": "tg"
         })
 

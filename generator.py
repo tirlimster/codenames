@@ -2,25 +2,25 @@ from random import shuffle, seed
 from words_base import getWords
 
 
-class Game:
-	def __init__(self, field=None, mask=None, words=None, key=None):
-		self.field = [[2] * 5 for _ in range(5)] if field is None else field
-		self.mask = [[0] * 5 for _ in range(5)] if mask is None else mask
-		if words is None:
-			self.words = getWords(25, key)
-			self.words = [[self.words[y * 5 + x] for x in range(5)] for y in range(5)]
-		else:
-			self.words = words
+class Board:
+	def __init__(self, field, mask, words):
+		self.field, self.mask, self.words = field, mask, words
 
+	def restart(self, key=None):
+		self.field = [[2] * 5 for _ in range(5)]
+		self.mask = [[0] * 5 for _ in range(5)]
+		words_list = getWords(25, key)
+		self.words = [[words_list[y * 5 + x] for x in range(5)] for y in range(5)]
 		if key is not None:
 			seed(key)
-			gen = [x for x in range(25)]
-			shuffle(gen)
-			for i in range(9):
-				self.field[gen[i] // 5][gen[i] % 5] = 0
-			for i in range(9, 9 + 8):
-				self.field[gen[i] // 5][gen[i] % 5] = 1
-			self.field[gen[9 + 8] // 5][gen[9 + 8] % 5] = 3
+
+		gen = [x for x in range(25)]
+		shuffle(gen)
+		for i in range(9):
+			self.field[gen[i] // 5][gen[i] % 5] = 0
+		for i in range(9, 9 + 8):
+			self.field[gen[i] // 5][gen[i] % 5] = 1
+		self.field[gen[9 + 8] // 5][gen[9 + 8] % 5] = 3
 
 	def find(self, word):
 		x, y = -1, -1
