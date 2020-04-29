@@ -1,59 +1,70 @@
 from config import Config
 from threading import Thread
 from telebot import TeleBot
-from telebot.types import InlineKeyboardMarkup as tgMarkup
-from telebot.types import InlineKeyboardButton as tgButton
+from telebot.types import ReplyKeyboardMarkup as tgMarkup
+from telebot.types import KeyboardButton as tgButton
 from time import sleep
+
+# only for tests
+from generator import Board
+
 config_secrets = Config()
 
-class TgBot:
-    bot = TeleBot(config_secrets.tg_bot_key)
-    events = []
 
+class TgBot:
     def __init__(self, events):
-        self.events.append(events)
+        self.bot = TeleBot(config_secrets.tg_bot_key)
+        self.events = events
+
+    def listener(self, messages):
+        for mes in messages:
+            print(mes.from_user)
+            self.events.append({
+                "text": mes.text,
+                "first": mes.from_user.first_name,
+                "last": mes.from_user.last_name,
+                "id": mes.from_user.id,
+                "platform": "tg"
+            })
 
     def main_loop(self):
+        self.bot.set_update_listener(self.listener)
         self.bot.polling()
 
-    def show(self):
-        print(self.events[0])
-
-    @bot.message_handler(func=lambda x: True)
-    def parse_message(mes, events=events):
-        events[0].append({
-            "text": mes.text,
-            "first": mes.from_user.first_name,
-            "last": mes.from_user.last_name,
-            "id": mes.from_user.id,
-            "platform": "tg"
-        })
-
-    @bot.callback_query_handler(func=lambda x: True)
-    def parse_callback(call, events=events, bot=bot):
-        events[0].append({
-            "text": call.data,
-            "first": call.from_user.first_name,
-            "last": call.from_user.last_name,
-            "id": call.from_user.id,
-            "platform": "tg"
-        })
-        bot.answer_callback_query(call.id, "Chosen word: " + call.data)
-
+    @staticmethod
+    def parse_row(row):
+        # mark_by_type = ["", "(ничье)", "(синие)", "(красное)", "(бомба!)"]
+        # mark_by_type = ["", "⬜", "🟦", "🟥", "⬛"]
+        mark_by_type = ["", "нич", "син", "кра", "бом"]
+        open_by_type = ["", "открыто"]
+        markup_row = []
+        for but in row:
+            print(but)
+            if type(but) == str:
+                markup_row.append(tgButton(but))
+            else:
+                markup_row.append(tgButton(f"{but[0].capitalize()} {mark_by_type[but[1]]} {open_by_type[but[2]]}"))
+        return markup_row
 
     def write_message(self, player_id, text, buttons=None):
-        markup = tgMarkup()
-        markup.row_width = 5
-        th = u'\U0001F4A8'
-        markup.add(tgButton('th', callback_data="word"))
-        self.bot.send_message(player_id, th, reply_markup=markup)
+        markup = None
+        if buttons is not None:
+            markup = tgMarkup(row_width=5, resize_keyboard=True, one_time_keyboard=True)
+            for row in buttons:
+                markup.add(*self.parse_row(row))
+        self.bot.send_message(player_id, text, reply_markup=markup, parse_mode='markdown')
 
 
 if __name__ == "__main__":
     ar = []
     BOT = TgBot(ar)
     t1 = Thread(target=BOT.main_loop)
-    BOT.write_message(406323156, "Hello")
     t1.start()
     while True:
+        print(ar)
+        while len(ar):
+            board = Board(None, None, None)
+            board.restart()
+            BOT.write_message(ar[-1]["id"], "Вот слова", board.showCaptain())
+            ar.pop()
         sleep(1)
