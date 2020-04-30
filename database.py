@@ -63,6 +63,7 @@ class Database:
             return game[0], json.loads(game[1]), game[2], json.loads(game[3]), json.loads(game[4]), json.loads(game[5])
 
     def create_game(self, admin_id, game_key):
+        print(f"creating game with admin_id={admin_id}, game_key={game_key}")
         with self.connection:
             players = json.dumps([[admin_id, 0]])
             new_field = json.dumps([[0] * 5 for _ in range(5)])
@@ -75,16 +76,20 @@ class Database:
         return self.get_game(admin_id, game_key)
 
     def save_game(self, game):
-        field, mask, words, players = map(
-            json.dumps, [game.board.field, game.board.mask, game.board.words, game.players]
-        )
+        field, mask, words = map(json.dumps, [game.board.field, game.board.mask, game.board.words])
+        players_arr = []
+        for p in game.players:
+            if p != game.deleted:
+                players_arr.append([p.player_id, p.game_status])
+        players = json.dumps(players_arr)
         with self.connection:
             self.cursor.execute(f"""
                 UPDATE games SET field = '{field}', mask = '{mask}', words = '{words}', players = '{players}',
-                admin_id = '{game.admin}' WHERE game_key = '{game.key}'
+                admin_id = '{game.players[game.admin].player_id}' WHERE game_key = '{game.key}'
            """)
 
     def delete_game(self, admin_id):
+        print(f"deleting game with admin_id={admin_id}")
         with self.connection:
             self.cursor.execute(f"""DELETE FROM games WHERE admin_id = '{admin_id}'""")
 

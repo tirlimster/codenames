@@ -18,12 +18,11 @@ class TgBot:
 
     def listener(self, messages):
         for mes in messages:
-            print(mes.from_user)
             self.events.append({
                 "text": mes.text,
                 "first": mes.from_user.first_name,
                 "last": mes.from_user.last_name,
-                "id": mes.from_user.id,
+                "id": str(mes.from_user.id),
                 "platform": "tg"
             })
 
@@ -34,12 +33,11 @@ class TgBot:
     @staticmethod
     def parse_row(row):
         # mark_by_type = ["", "(ничье)", "(синие)", "(красное)", "(бомба!)"]
-        # mark_by_type = ["", "⬜", "🟦", "🟥", "⬛"]
-        mark_by_type = ["", "нич", "син", "кра", "бом"]
+        mark_by_type = ["", "⬜", "🟦", "🟥", "⬛"]
+        # mark_by_type = ["", "нич", "син", "кра", "бом"]
         open_by_type = ["", "открыто"]
         markup_row = []
         for but in row:
-            print(but)
             if type(but) == str:
                 markup_row.append(tgButton(but))
             else:
@@ -49,7 +47,7 @@ class TgBot:
     def write_message(self, player_id, text, buttons=None):
         markup = None
         if buttons is not None:
-            markup = tgMarkup(row_width=5, resize_keyboard=True, one_time_keyboard=True)
+            markup = tgMarkup(row_width=5, resize_keyboard=True)
             for row in buttons:
                 markup.add(*self.parse_row(row))
         self.bot.send_message(player_id, text, reply_markup=markup, parse_mode='markdown')
@@ -65,6 +63,6 @@ if __name__ == "__main__":
         while len(ar):
             board = Board(None, None, None)
             board.restart()
-            BOT.write_message(ar[-1]["id"], "Вот слова", board.showCaptain())
+            BOT.write_message(ar[-1]["id"], "Вот слова", [["Главное меню"]] + board.showCaptain())
             ar.pop()
         sleep(1)

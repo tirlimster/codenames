@@ -10,27 +10,29 @@ class Board:
 
     def __init__(self, field, mask, words):
         self.field, self.mask, self.words = field, mask, words
+        self.h, self.w = (len(self.field), len(self.field[0])) if field is not None else (0, 0)
 
-    def restart(self, key=None, t1=9, t2=8):
-        self.field = [[1] * 5 for _ in range(5)]
-        self.mask = [[0] * 5 for _ in range(5)]
-        words_list = getWords(25, key)
-        self.words = [[words_list[y * 5 + x] for x in range(5)] for y in range(5)]
+    def restart(self, key=None, h=4, w=5, t1=9, t2=8):
+        self.h, self.w = h, w
+        self.field = [[1] * w for _ in range(h)]
+        self.mask = [[0] * w for _ in range(h)]
+        words_list = getWords(w * h, key)
+        self.words = [[words_list[y * w + x] for x in range(w)] for y in range(h)]
         if key is not None:
             seed(key)
-        gen = [x for x in range(25)]
+        gen = [x for x in range(w * h)]
         shuffle(gen)
         for i in range(t1):
-            self.field[gen[i] // 5][gen[i] % 5] = 2
+            self.field[gen[i] // w][gen[i] % w] = 2
         for i in range(t1, t1 + t2):
-            self.field[gen[i] // 5][gen[i] % 5] = 3
+            self.field[gen[i] // w][gen[i] % w] = 3
         self.field[gen[t1 + t2] // 5][gen[t1 + t2] % 5] = 4
 
     def find(self, word):
         x, y = -1, -1
-        for x0 in range(5):
-            for y0 in range(5):
-                if self.words[y0][x0] == word:
+        for x0 in range(self.w):
+            for y0 in range(self.h):
+                if word in self.words[y0][x0]:
                     x, y = x0, y0
         if (x, y) == (-1, -1):
             return 1
@@ -40,9 +42,9 @@ class Board:
 
     def open(self, word):
         x, y = -1, -1
-        for x0 in range(5):
-            for y0 in range(5):
-                if self.words[y0][x0] == word:
+        for x0 in range(self.w):
+            for y0 in range(self.h):
+                if word in self.words[y0][x0]:
                     x, y = x0, y0
         if (x, y) == (-1, -1):
             print("No such word found")
@@ -51,10 +53,12 @@ class Board:
         return self.field[y][x]
 
     def showUser(self):
-        return [[(self.words[y][x], self.field[y][x] if self.mask[y][x] else 0, 0) for x in range(5)] for y in range(5)]
+        return [[(self.words[y][x], self.field[y][x] if self.mask[y][x] else 0, 0)
+                 for x in range(self.w)] for y in range(self.h)]
 
     def showCaptain(self):
-        return [[(self.words[y][x], self.field[y][x], self.mask[y][x]) for x in range(5)] for y in range(5)]
+        return [[(self.words[y][x], self.field[y][x], self.mask[y][x])
+                 for x in range(self.w)] for y in range(self.h)]
 
 
 if __name__ == '__main__':
