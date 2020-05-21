@@ -26,8 +26,9 @@ def getList():
 	return ws
 
 
-def getWords(n, key=1543):
-	seed(key)
+def getWords(n, key=None):
+	if key is not None:
+		seed(key)
 	with open("words.json", 'r', encoding="utf-8") as f:
 		ws = loads(f.read().strip())
 	shuffle(ws)

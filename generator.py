@@ -2,31 +2,50 @@ from random import shuffle, seed
 from words_base import getWords
 
 
+class ConsoleBot:
+    def __init__(self, events):
+        self.events = events
+
+    def main_loop(self):
+        while True:
+            text = input()
+            self.events.append({
+                "text": text,
+                "first": "Benjamin",
+                "last": "Counter",
+                "id": "2281337",
+                "platform": "cn"
+            })
+
+    @staticmethod
+    def write_message(player_id, text, buttons=None):
+        print(f"CONSOLE BOT sending to {player_id}: {text} ({buttons})")
+
+
 class Board:
     """
     Class Board used to generate codenames field
-    cell_type: 0 - not_opened, 1 - neutral, 2 - blue, red - 3, 4 - bomb
+    field - array filled with {cell_type, flag_is_opened, word}
+    cell_type: 0 - neutral, 1 - blue, 2 - red, 3 - bomb
     """
 
-    def __init__(self, field, mask, words):
-        self.field, self.mask, self.words = field, mask, words
+    def __init__(self, field):
+        self.field = field
         self.h, self.w = (len(self.field), len(self.field[0])) if field is not None else (0, 0)
 
     def restart(self, key=None, h=4, w=5, t1=9, t2=8):
         self.h, self.w = h, w
-        self.field = [[1] * w for _ in range(h)]
-        self.mask = [[0] * w for _ in range(h)]
         words_list = getWords(w * h, key)
-        self.words = [[words_list[y * w + x] for x in range(w)] for y in range(h)]
+        self.field = [[[0, 0, words_list[x * w + y]] for y in range(w)] for x in range(h)]
         if key is not None:
             seed(key)
-        gen = [x for x in range(w * h)]
-        shuffle(gen)
+        cells = [(i // w, i % w) for i in range(w * h)]
+        shuffle(cells)
         for i in range(t1):
-            self.field[gen[i] // w][gen[i] % w] = 2
+            self.field[cells[i][0]][cells[i][1]][0] = 1
         for i in range(t1, t1 + t2):
-            self.field[gen[i] // w][gen[i] % w] = 3
-        self.field[gen[t1 + t2] // 5][gen[t1 + t2] % 5] = 4
+            self.field[cells[i][0]][cells[i][1]][0] = 2
+        self.field[cells[t1 + t2][0]][cells[t1 + t2][1]][0] = 3
 
     def find(self, word):
         x, y = -1, -1
@@ -53,12 +72,10 @@ class Board:
         return self.field[y][x]
 
     def showUser(self):
-        return [[(self.words[y][x], self.field[y][x] if self.mask[y][x] else 0, 0)
-                 for x in range(self.w)] for y in range(self.h)]
+        return self.field
 
     def showCaptain(self):
-        return [[(self.words[y][x], self.field[y][x], self.mask[y][x])
-                 for x in range(self.w)] for y in range(self.h)]
+        return [[[cell[0], 1, cell[2]] for cell in row] for row in self.field]
 
 
 if __name__ == '__main__':

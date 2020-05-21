@@ -1,0 +1,22 @@
+{
+  "new_player": {
+    "key_words": [],
+    "links": ["main_menu"]
+  },
+  "menu": {
+    "key_words": ["главное меню", "меню"],
+    "links": ["creating", "joining"]
+  },
+  "creating": {
+    "key_words": ["создать игру", "начать игру", "новая игра"],
+    "links": ["menu"]
+  },
+  "joining": {
+    "key_words": ["войти в игру", "присоединиться", "войти"],
+    "links": ["menu"]
+  },
+  "player": {
+    "key_words": [],
+    "links": ["menu"]
+  }
+}
