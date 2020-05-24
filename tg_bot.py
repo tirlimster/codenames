@@ -33,15 +33,17 @@ class TgBot:
     @staticmethod
     def parse_row(row):
         # mark_by_type = ["", "(ничье)", "(синие)", "(красное)", "(бомба!)"]
-        mark_by_type = ["", "⬜", "🟦", "🟥", "⬛"]
+        mark_by_type = ["⬜", "🟦", "🟥", "⬛"]
         # mark_by_type = ["", "нич", "син", "кра", "бом"]
         # open_by_type = ["", "открыто"]
         markup_row = []
         for but in row:
             if type(but) == str:
-                markup_row.append(tgButton(but))
+                markup_row.append(tgButton(but.capitalize()))
+            elif but[1]:
+                markup_row.append(tgButton(f"{but[2].capitalize()}\n{mark_by_type[but[0]]}"))
             else:
-                markup_row.append(tgButton(f"{but[2].capitalize()} {mark_by_type[but[0]] if but[1] else 'закрыто'}"))
+                markup_row.append(tgButton(f"{but[2].upper()}"))
         return markup_row
 
     def write_message(self, player_id, text, buttons=None):
@@ -61,7 +63,7 @@ if __name__ == "__main__":
     while True:
         print(ar)
         while len(ar):
-            board = Board(None, None, None)
+            board = Board(None)
             board.restart()
             BOT.write_message(ar[-1]["id"], "Вот слова", [["Главное меню"]] + board.showCaptain())
             ar.pop()

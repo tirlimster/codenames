@@ -4,7 +4,7 @@
     "menu": ["enter_creating", "enter_joining", "rules", "info", "unknown"],
     "creating": ["enter_menu", "create", "unknown"],
     "joining": ["enter_menu", "join", "unknown"],
-    "player": ["enter_menu", "parse_game", "restart_game", "rules", "leave_room", "unknown"]
+    "player": ["leave_room", "parse_game", "restart_game", "rules", "unknown"]
   },
   "key_words": {
     "enter_menu": ["главное меню", "меню"],

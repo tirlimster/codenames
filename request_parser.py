@@ -125,7 +125,9 @@ class Game:
         self.players.sender.game_status = 0
         self.players.sender.send_message(f"Ты вышел из комнаты")
         self.send_admin(f"{self.players.sender.name} покинул комнату")
+        print("game players:", self.game_players, self.players.sender.player_id, end=" -> ")
         self.game_players = [p_id for p_id in self.game_players if p_id != self.players.sender.player_id]
+        print(self.game_players)
 
     def open_word(self, word):
         self.board.open(word)

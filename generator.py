@@ -33,7 +33,7 @@ class Board:
         self.field = field
         self.h, self.w = (len(self.field), len(self.field[0])) if field is not None else (0, 0)
 
-    def restart(self, key=None, h=4, w=5, t1=9, t2=8):
+    def restart(self, key=None, h=8, w=3, t1=9, t2=8):
         self.h, self.w = h, w
         words_list = getWords(w * h, key)
         self.field = [[[0, 0, words_list[x * w + y]] for y in range(w)] for x in range(h)]
@@ -52,9 +52,7 @@ class Board:
         for x0 in range(self.w):
             for y0 in range(self.h):
                 if self.field[y0][x0][2].lower() in word:
-                    print(f"x0, y0: {x0}, {y0}")
                     x, y = x0, y0
-        print(f"find coords: {x} {y}")
         return x, y
 
     def find(self, word):
