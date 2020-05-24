@@ -1,19 +1,18 @@
 {
   "status": {
-    "new_player": ["enter_menu", "unknown"],
+    "new_player": ["enter_menu", "new_player"],
     "menu": ["enter_creating", "enter_joining", "rules", "info", "unknown"],
-    "creating": ["enter_menu", "join", "unknown"],
-    "joining": ["enter_menu", "create", "unknown"],
-    "player": ["enter_menu", "rules", "unknown"]
+    "creating": ["enter_menu", "create", "unknown"],
+    "joining": ["enter_menu", "join", "unknown"],
+    "player": ["enter_menu", "parse_game", "restart_game", "rules", "leave_room", "unknown"]
   },
-  "commands": {
+  "key_words": {
     "enter_menu": ["главное меню", "меню"],
     "enter_creating": ["создать игру", "начать игру", "новая игра"],
     "enter_joining": ["войти в игру", "присоединиться", "войти"],
     "rules": ["правила"],
     "info": ["информация"],
-    "join": [],
-    "create": [],
-    "unknown": []
+    "leave_room": ["покинуть комнату"],
+    "restart_game": ["начать игру"]
   }
 }

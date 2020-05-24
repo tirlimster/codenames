@@ -65,13 +65,13 @@ class Database:
             game = self.cursor.fetchone()
             if game is None:
                 return None
-            return game[1], json.loads(game[2]), json.loads(game[3])
+            return game[0], json.loads(game[1]), json.loads(game[2])
 
     def create_game(self, game_key, creator):
         print(f"creating game with game_key={game_key}")
         with self.connection:
-            players = json.dumps([[creator, 0]])
-            new_field = json.dumps([[0, 0, 'а'] * 5 for _ in range(5)])
+            players = json.dumps([creator])
+            new_field = json.dumps([[[0, 0, '$']] * 5 for _ in range(5)])
             self.cursor.execute(f"""
                 INSERT INTO games (game_key, players, field) 
                 VALUES ('{game_key}', '{players}', '{new_field}')
@@ -83,7 +83,7 @@ class Database:
         players = json.dumps(game.game_players)
         with self.connection:
             self.cursor.execute(f"""
-                UPDATE games SET field = '{field}', players = '{players}', WHERE game_key = '{game.key}'
+                UPDATE games SET field = '{field}', players = '{players}' WHERE game_key = '{game.key}'
             """)
 
     def delete_game(self, game_key):

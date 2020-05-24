@@ -8,12 +8,12 @@ class ConsoleBot:
 
     def main_loop(self):
         while True:
-            text = input()
+            text = input().split()
             self.events.append({
-                "text": text,
-                "first": "Benjamin",
-                "last": "Counter",
-                "id": "2281337",
+                "text": " ".join(text[1:]),
+                "first": text[0],
+                "last": "Surname",
+                "id": text[0],
                 "platform": "cn"
             })
 
@@ -47,29 +47,28 @@ class Board:
             self.field[cells[i][0]][cells[i][1]][0] = 2
         self.field[cells[t1 + t2][0]][cells[t1 + t2][1]][0] = 3
 
-    def find(self, word):
+    def find_coords(self, word):
         x, y = -1, -1
         for x0 in range(self.w):
             for y0 in range(self.h):
-                if word in self.words[y0][x0]:
+                if self.field[y0][x0][2].lower() in word:
+                    print(f"x0, y0: {x0}, {y0}")
                     x, y = x0, y0
+        print(f"find coords: {x} {y}")
+        return x, y
+
+    def find(self, word):
+        x, y = self.find_coords(word)
         if (x, y) == (-1, -1):
-            return 1
-        if self.mask[y][x]:
             return 2
-        return 0
+        return self.field[y][x][1]
 
     def open(self, word):
-        x, y = -1, -1
-        for x0 in range(self.w):
-            for y0 in range(self.h):
-                if word in self.words[y0][x0]:
-                    x, y = x0, y0
+        x, y = self.find_coords(word)
         if (x, y) == (-1, -1):
             print("No such word found")
             raise KeyError
-        self.mask[y][x] = 1
-        return self.field[y][x]
+        self.field[y][x][1] = 1
 
     def showUser(self):
         return self.field
