@@ -2,7 +2,7 @@ import time
 import random
 import threading
 # from vk_bot import VkBot
-from tg_bot import TgBot
+# from tg_bot import TgBot
 from generator import Board, ConsoleBot
 from database import Database, Commands
 
@@ -16,19 +16,19 @@ class Players:
             data = self.db.get_player(player_id)
             if data is None:
                 data = self.db.insert_player(player_id, name)
-            self.player_id, self.name, self.current_game, self.status = data
-            self.game_status = 0
-
+            self.player_id, self.name, self.current_game, self.status, self.game_status = data
             self.bot = bots[data[0][:2]]
             self.out_message = ""
             self.board = []
 
         def __del__(self):
+            print(f"saving player: {self.player_id}, {self.name}, {self.current_game}, {self.status}")
             if self.out_message:
-                # todo make buttons
-                self.bot.write_message(self.player_id[2:], self.out_message.strip(), self.buttons + self.board)
-            self.db.edit_player(self.player_id, self.current_game, self.status)
-            # print(f"Player {self.player_id} saved")
+                names = COMMANDS["commands"]
+                buttons = [[names[but][0]] for but in COMMANDS["status"][self.status] if names[but]]
+                self.bot.write_message(self.player_id[2:], self.out_message.strip(), buttons + self.board)
+            self.db.update_player(self)
+            print(f"Player {self.player_id} saved")
 
         def send_message(self, text):
             if text is not "":
@@ -45,7 +45,7 @@ class Players:
     def add_player(self, player_id, mess=None):
         if player_id in self.players_dict:
             return
-        name = None if mess is None else f"{mess['first']} {mess['second']}"
+        name = None if mess is None else f"{mess['first']} {mess['last']}"
         self.players_dict[player_id] = self.Player(player_id, self.db, self.bots, name)
         return self.players_dict[player_id]
 
@@ -76,7 +76,7 @@ class Game:
         if len(self.game_players) < 4:
             self.send_admin("Не хватает игроков, чтобы начать игру. Нужно хотя бы 4")
             return
-        trans = [i for i in range(len(self.game_players))]
+        trans = [i for i in range(len(self.game_players)) if i]
         random.shuffle(trans)
         self.players[self.game_players[trans[0]]].game_status = 3
         self.players[self.game_players[trans[1]]].game_status = 4
@@ -115,7 +115,7 @@ class Game:
         self.send_admin(f"{self.players.sender.name} присоединился к комнате")
 
     def delete_sender(self):
-        self.players.sender.status = "main_menu"
+        self.players.sender.status = "menu"
         self.players.sender.send_message(f"Ты вышел из комнаты")
         self.send_admin(f"{self.players.sender.name} покинул комнату")
         self.game_players = [p for p in self.game_players if self.game_players]
@@ -135,7 +135,7 @@ class Game:
 
     def delete_game(self):
         for p_id in self.game_players:
-            self.players[p_id].status = "main_menu"
+            self.players[p_id].status = "menu"
             self.players[p_id].game_status = 0
             self.players[p_id].send_message(f"Комната удалена")
         self.db.delete_game(self.players.sender.current_game)
@@ -147,9 +147,11 @@ class Request:
         self.db = db
         self.bots = bots
         self.lwr = mess["text"].lower()
-        self.players = Players(player_id, self.db, self.bots, mess)
+        self.players = Players(self.db, self.bots, player_id, mess)
 
-        getattr(self, self.players.sender.status)()
+        for cmd in COMMANDS["status"][self.players.sender.status]:
+            if getattr(self, cmd)():
+                break
 
     def new_player(self):
         self.players.sender.send_message(
@@ -159,20 +161,20 @@ class Request:
     def unknown(self):
         self.players.sender.send_message("Не понял")
 
-    def menu(self):
-        self.players.sender.status = "main_menu"
+    def enter_menu(self):
+        self.players.sender.status = "menu"
         self.players.sender.send_message("Ты в главном меню")
 
-        # todo commands parser
+    def enter_creating(self):
         self.players.sender.status = "creating_game"
         self.players.sender.send_message("Инициализация комнаты...\nЗадай ключ своей комнате")
 
-    def show_rules(self):
-        self.players.sender.send_message("тут будут правила codenames")
-
-    def joining(self):
+    def enter_joining(self):
         self.players.sender.status = "joining_game"
         self.players.sender.send_message("Напиши ключ комнаты, к которой хочешь присоединиться")
+
+    def show_rules(self):
+        self.players.sender.send_message("Тут будут правила codenames")
 
     def to_delete_room(self):
         game = Game(self.db, self.players, self.players.sender.current_game)
@@ -224,7 +226,7 @@ class MainLoop:
 
         self.bots = {
             # "vk": VkBot(self.events),
-            "tg": TgBot(self.events),
+            # "tg": TgBot(self.events),
             "cn": ConsoleBot(self.events)
         }
         # starting bots
@@ -238,11 +240,11 @@ class MainLoop:
                 continue
             mess = self.events[-1]
             self.events.pop()
-            try:
-                Request(mess, self.db, bots=self.bots)
-            except Exception as ex:
-                print(f"!!! ERROR WHILE PARSING MESSAGE: {ex.args}")
-                self.bots[mess["platform"]].write_message(mess["id"], "Произошла ошибка, дико извиняюсь")
+            # try:
+            Request(mess, self.db, bots=self.bots)
+            # except Exception as ex:
+            #     print(f"!!! ERROR WHILE PARSING MESSAGE: {ex.args}")
+            #     self.bots[mess["platform"]].write_message(mess["id"], "Произошла ошибка, дико извиняюсь")
 
 
 if __name__ == '__main__':

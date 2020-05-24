@@ -1,22 +1,19 @@
 {
-  "new_player": {
-    "key_words": [],
-    "links": ["main_menu"]
+  "status": {
+    "new_player": ["enter_menu", "unknown"],
+    "menu": ["enter_creating", "enter_joining", "rules", "info", "unknown"],
+    "creating": ["enter_menu", "join", "unknown"],
+    "joining": ["enter_menu", "create", "unknown"],
+    "player": ["enter_menu", "rules", "unknown"]
   },
-  "menu": {
-    "key_words": ["главное меню", "меню"],
-    "links": ["creating", "joining"]
-  },
-  "creating": {
-    "key_words": ["создать игру", "начать игру", "новая игра"],
-    "links": ["menu"]
-  },
-  "joining": {
-    "key_words": ["войти в игру", "присоединиться", "войти"],
-    "links": ["menu"]
-  },
-  "player": {
-    "key_words": [],
-    "links": ["menu"]
+  "commands": {
+    "enter_menu": ["главное меню", "меню"],
+    "enter_creating": ["создать игру", "начать игру", "новая игра"],
+    "enter_joining": ["войти в игру", "присоединиться", "войти"],
+    "rules": ["правила"],
+    "info": ["информация"],
+    "join": [],
+    "create": [],
+    "unknown": []
   }
 }

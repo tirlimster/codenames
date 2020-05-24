@@ -52,10 +52,11 @@ class Database:
         return self.get_player(player_id)
 
     def update_player(self, player):
+        current_game = f"NULL" if player.current_game is None else f"'{player.current_game}'"
         with self.connection:
             self.cursor.execute(f"""
-                UPDATE players SET current_game = {player.current_game}, status = '{player.status}',
-                game_status = {player.game_status} WHERE player_id = '{self.player_id}'
+                UPDATE players SET current_game = {current_game}, status = '{player.status}',
+                game_status = {player.game_status} WHERE player_id = '{player.player_id}'
             """)
 
     def get_game(self, game_key):
@@ -79,7 +80,7 @@ class Database:
 
     def save_game(self, game):
         field = json.dumps(game.board.field)
-        players = json.dumps(game.players)
+        players = json.dumps(game.game_players)
         with self.connection:
             self.cursor.execute(f"""
                 UPDATE games SET field = '{field}', players = '{players}', WHERE game_key = '{game.key}'
