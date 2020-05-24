@@ -55,6 +55,7 @@ class TgBot:
         while True:
             try:
                 self.bot.send_message(player_id, text, reply_markup=markup, parse_mode='markdown')
+                break
             except Exception as ex:
                 print(f"exception {ex}")
                 sleep(1)
