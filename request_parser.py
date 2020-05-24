@@ -2,7 +2,7 @@ import time
 import random
 import threading
 # from vk_bot import VkBot
-# from tg_bot import TgBot
+from tg_bot import TgBot
 from generator import Board, ConsoleBot
 from database import Database, Commands
 
@@ -122,9 +122,10 @@ class Game:
 
     def delete_sender(self):
         self.players.sender.status = "menu"
+        self.players.sender.game_status = 0
         self.players.sender.send_message(f"Ты вышел из комнаты")
         self.send_admin(f"{self.players.sender.name} покинул комнату")
-        self.game_players = [p for p in self.game_players if self.game_players]
+        self.game_players = [p_id for p_id in self.game_players if p_id != self.players.sender.player_id]
 
     def open_word(self, word):
         self.board.open(word)
@@ -247,7 +248,7 @@ class MainLoop:
 
         self.bots = {
             # "vk": VkBot(self.events),
-            # "tg": TgBot(self.events),
+            "tg": TgBot(self.events),
             "cn": ConsoleBot(self.events)
         }
         # starting bots

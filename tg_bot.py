@@ -35,13 +35,13 @@ class TgBot:
         # mark_by_type = ["", "(ничье)", "(синие)", "(красное)", "(бомба!)"]
         mark_by_type = ["", "⬜", "🟦", "🟥", "⬛"]
         # mark_by_type = ["", "нич", "син", "кра", "бом"]
-        open_by_type = ["", "открыто"]
+        # open_by_type = ["", "открыто"]
         markup_row = []
         for but in row:
             if type(but) == str:
                 markup_row.append(tgButton(but))
             else:
-                markup_row.append(tgButton(f"{but[0].capitalize()} {mark_by_type[but[1]]} {open_by_type[but[2]]}"))
+                markup_row.append(tgButton(f"{but[2].capitalize()} {mark_by_type[but[0]] if but[1] else 'закрыто'}"))
         return markup_row
 
     def write_message(self, player_id, text, buttons=None):
