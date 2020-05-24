@@ -124,10 +124,11 @@ class Game:
         self.players.sender.status = "menu"
         self.players.sender.game_status = 0
         self.players.sender.send_message(f"Ты вышел из комнаты")
-        self.send_admin(f"{self.players.sender.name} покинул комнату")
-        print("game players:", self.game_players, self.players.sender.player_id, end=" -> ")
+        if self.game_players[0] != self.players.sender.player_id:
+            self.send_admin(f"{self.players.sender.name} покинул комнату")
         self.game_players = [p_id for p_id in self.game_players if p_id != self.players.sender.player_id]
-        print(self.game_players)
+        if self.game_players is []:
+            self.db.delete_game(self.key)
 
     def open_word(self, word):
         self.board.open(word)
@@ -264,11 +265,11 @@ class MainLoop:
                 continue
             mess = self.events[-1]
             self.events.pop()
-            # try:
-            Request(mess, self.db, bots=self.bots)
-            # except Exception as ex:
-            #     print(f"!!! ERROR WHILE PARSING MESSAGE: {ex.args}")
-            #     self.bots[mess["platform"]].write_message(mess["id"], "Произошла ошибка, дико извиняюсь")
+            try:
+                Request(mess, self.db, bots=self.bots)
+            except Exception as ex:
+                print(f"!!! ERROR WHILE PARSING MESSAGE: {ex.args}")
+                self.bots[mess["platform"]].write_message(mess["id"], "Произошла ошибка, дико извиняюсь")
 
 
 if __name__ == '__main__':
