@@ -52,7 +52,12 @@ class TgBot:
             markup = tgMarkup(row_width=5, resize_keyboard=True)
             for row in buttons:
                 markup.add(*self.parse_row(row))
-        self.bot.send_message(player_id, text, reply_markup=markup, parse_mode='markdown')
+        while True:
+            try:
+                self.bot.send_message(player_id, text, reply_markup=markup, parse_mode='markdown')
+            except Exception as ex:
+                print(f"exception {ex}")
+                sleep(1)
 
 
 if __name__ == "__main__":

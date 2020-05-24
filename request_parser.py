@@ -230,7 +230,6 @@ class Request:
     def parse_game(self):
         game = Game(self.db, self.players, self.players.sender.current_game)
         res = game.find_word(self.lwr)
-        print(f"RESSS {res}")
         if res == 2:
             return False
         if self.players.sender.game_status == 0:
