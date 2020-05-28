@@ -66,6 +66,9 @@ class Game:
         self.board = Board(data[2])
 
     def __del__(self):
+        if self.game_players is []:
+            self.db.delete_game(self.key)
+            return
         for p_id in self.game_players:
             if self.players[p_id].game_status in [1, 2]:
                 self.players[p_id].board = self.board.showUser()
@@ -127,8 +130,6 @@ class Game:
         if self.game_players[0] != self.players.sender.player_id:
             self.send_admin(f"{self.players.sender.name} покинул комнату")
         self.game_players = [p_id for p_id in self.game_players if p_id != self.players.sender.player_id]
-        if self.game_players is []:
-            self.db.delete_game(self.key)
 
     def open_word(self, word):
         self.board.open(word)
